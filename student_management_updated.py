@@ -1,3 +1,27 @@
+# Pagination Helper Function
+def paginate_students(students, page_size=3, page_number=1):
+    total_students = len(students)
+    
+    start_index = (page_number - 1) * page_size
+    end_index = start_index + page_size
+    
+    student_ids = list(students.keys())
+    students_to_display = student_ids[start_index:end_index]
+    
+    print(f"\n--- Displaying Students - Page {page_number} ---")
+    if students_to_display:
+        for student_id in students_to_display:
+            student = students[student_id]
+            print(f"ID: {student_id} | Name: {student.first_name} {student.last_name} | Courses: {', '.join(student.courses)}")
+    else:
+        print("No students to display on this page.")
+    
+    total_pages = (total_students + page_size - 1) // page_size
+    print(f"\nTotal Students: {total_students} | Page {page_number} of {total_pages}")
+    
+    return total_pages
+
+# Student Class
 class Student:
     def __init__(self, student_id, first_name, last_name, courses, grades):
         self.student_id = student_id
@@ -25,6 +49,7 @@ class Student:
         print(f"Courses: {', '.join(self.courses)}")
         print(f"Grades: {', '.join(map(str, self.grades))}")
 
+# Student Management System Class
 class StudentManagementSystem:
     def __init__(self):
         self.students = {}
@@ -72,15 +97,26 @@ class StudentManagementSystem:
         else:
             print("No student found with that name.")
 
-    # New functionality to list all students
+    # List all students with pagination
     def list_all_students(self):
-        if self.students:
-            print("\n--- All Students ---")
-            for student_id, student in self.students.items():
-                print(f"ID: {student_id} | Name: {student.first_name} {student.last_name} | Courses: {', '.join(student.courses)}")
-        else:
-            print("No students found in the system.")
+        page_size = 3
+        page_number = 1
+        total_pages = paginate_students(self.students, page_size, page_number)
 
+        while True:
+            action = input("\nEnter 'n' for next page, 'p' for previous page, 'e' to exit: ").lower()
+            if action == 'n' and page_number < total_pages:
+                page_number += 1
+                total_pages = paginate_students(self.students, page_size, page_number)
+            elif action == 'p' and page_number > 1:
+                page_number -= 1
+                total_pages = paginate_students(self.students, page_size, page_number)
+            elif action == 'e':
+                break
+            else:
+                print("Invalid input or no more pages in that direction.")
+
+# Display Menu Function
 def display_menu():
     print("\n--- Student Management System ---")
     print("1. Add New Student")
@@ -89,9 +125,10 @@ def display_menu():
     print("4. Update Student Information")
     print("5. Delete Student Record")
     print("6. Search Student by Name")
-    print("7. List All Students")  # New option for listing all students
+    print("7. List All Students")  # New option for listing all students with pagination
     print("8. Exit")
 
+# Main Function
 def main():
     system = StudentManagementSystem()
 
@@ -139,7 +176,7 @@ def main():
             name = input("Enter name to search: ")
             system.search_student(name)
 
-        # List All Students
+        # List All Students with Pagination
         elif choice == "7":
             system.list_all_students()
         
